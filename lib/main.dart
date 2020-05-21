@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 //  runApp(new MaterialApp(home:new ButtonPage()));//Button
 //
 //}
+
+//这是入口，运行这个方法 走出刚才给你的截图 就是电影 那个列表模板
 void main() => runApp(MyGrid());
 
 //region 电影海报案例
@@ -42,6 +44,15 @@ class MyGrid extends StatelessWidget {
                 childAspectRatio: 0.75,
               ),
               children: <Widget>[
+                new Image.network(
+                    "https://img.mukewang.com/5ea65155099c258403480172.jpg",
+                    fit: BoxFit.cover),
+                new Image.network(
+                    "https://img.mukewang.com/5ea65155099c258403480172.jpg",
+                    fit: BoxFit.cover),
+                new Image.network(
+                    "https://img.mukewang.com/5ea65155099c258403480172.jpg",
+                    fit: BoxFit.cover),
                 new Image.network(
                     "https://img.mukewang.com/5ea65155099c258403480172.jpg",
                     fit: BoxFit.cover),
@@ -199,21 +210,21 @@ class StackLayoutDemo extends StatelessWidget {
 
 //endregion
 //region Center既中心定位控件，能够将子控件放在其内部中心。
-class CenterLayoutDemo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('中心布局'),
-      ),
-      body: new Center(
-        child: new Text('我在屏幕中央'),
-      ),
-    );
-  }
-}
-
-//endregion
+//class CenterLayoutDemo extends StatelessWidget {
+//  @override
+//  Widget build(BuildContext context) {
+//    return new Scaffold(
+//      appBar: new AppBar(
+//        title: new Text('中心布局'),
+//      ),
+//      body: new Center(
+//        child: new Text('我在屏幕中央'),
+//      ),
+//    );
+//  }
+//}
+//
+////endregion
 //region listview 长列表数据
 class ListViewLayoutDemo extends StatelessWidget {
   @override
