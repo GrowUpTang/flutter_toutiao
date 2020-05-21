@@ -26,7 +26,7 @@ import 'package:flutter/material.dart';
 //这是入口，运行这个方法 走出刚才给你的截图 就是电影 那个列表模板
 void main() => runApp(MyGrid());
 
-//region 电影海报案例
+//region 电影海报案例 2020年5月21日17:06:30
 class MyGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
