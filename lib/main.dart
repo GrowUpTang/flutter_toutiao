@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 //关于文本  Text
 //void main() {
@@ -24,7 +27,791 @@ import 'package:flutter/material.dart';
 //}
 
 //这是入口，运行这个方法 走出刚才给你的截图 就是电影 那个列表模板
-void main() => runApp(MyGrid());
+//void main() => runApp(MyAppEdit());
+void main() {
+  runApp(new MaterialApp(
+    home: new StoragePage_Path(),
+  ));
+}
+
+//region SharedPreferences 数据存储
+class StoragePage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => StorageState();
+}
+
+class StorageState extends State {
+  var _textFieldController = new TextEditingController();
+  var _storageString = '';
+  final STORAGE_KEY = 'storage_key';
+
+//   * 利用SharedPreferences存储数据
+  Future saveString() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setString(
+        STORAGE_KEY, _textFieldController.value.text.toString());
+  }
+
+//   * 获取存在SharedPreferences中的数据
+  Future getString() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      _storageString = sharedPreferences.get(STORAGE_KEY);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('数据存储'),
+      ),
+      body: new Column(
+        children: <Widget>[
+          Text("shared_preferences存储", textAlign: TextAlign.center),
+          TextField(
+            controller: _textFieldController,
+          ),
+          MaterialButton(
+            onPressed: saveString,
+            child: new Text("存储"),
+            color: Colors.pink,
+          ),
+          MaterialButton(
+            onPressed: getString,
+            child: new Text("获取"),
+            color: Colors.lightGreen,
+          ),
+          Text('shared_preferences存储的值为  $_storageString'),
+        ],
+      ),
+    );
+  }
+}
+
+//endregion
+//region 文件存储
+
+//path_provider中有三个获取文件路径的方法：
+
+//getTemporaryDirectory()//获取应用缓存目录，等同IOS的NSTemporaryDirectory()和Android的getCacheDir() 方法
+//getApplicationDocumentsDirectory()获取应用文件目录类似于Ios的NSDocumentDirectory和Android上的 AppData目录
+//getExternalStorageDirectory()//这个是存储卡，仅仅在Android平台可以使用
+
+class StoragePage_Path extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => StorageState_Path();
+}
+
+class StorageState_Path extends State {
+  var _textFieldController = new TextEditingController();
+  var _storageString = '';
+
+  /**
+   * 利用文件存储数据
+   */
+  saveString() async {
+    final file = await getFile('file.text');
+    //写入字符串
+    file.writeAsString(_textFieldController.value.text.toString());
+  }
+
+  /**
+   * 获取存在文件中的数据
+   */
+  Future getString() async {
+    final file = await getFile('file.text');
+    var filePath  = file.path;
+    setState(() {
+      file.readAsString().then((String value) {
+        _storageString = value +'\n文件存储路径：'+filePath;
+      });
+    });
+  }
+
+  /**
+   * 初始化文件路径
+   */
+  Future<File> getFile(String fileName) async {
+    //获取应用文件目录类似于Ios的NSDocumentDirectory和Android上的 AppData目录
+    final fileDirectory = await getApplicationDocumentsDirectory();
+
+    //获取存储路径
+    final filePath = fileDirectory.path;
+
+    //或者file对象（操作文件记得导入import 'dart:io'）
+    return new File(filePath + "/"+fileName);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text('数据存储'),
+      ),
+      body: new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text("文件存储", textAlign: TextAlign.center),
+          TextField(
+            controller: _textFieldController,
+          ),
+          MaterialButton(
+            onPressed: saveString,
+            child: new Text("存储"),
+            color: Colors.cyan,
+          ),
+          MaterialButton(
+            onPressed: getString,
+            child: new Text("获取"),
+            color: Colors.deepOrange,
+          ),
+          Text('从文件存储中获取的值为  $_storageString'),
+        ],
+      ),
+    );
+  }
+}
+//endregion path_provider
+
+
+
+
+//轻量级的 提示widget
+// region Tooltip 长按widget时，会在上方或者下方出现类似Toast的提示，隔一段时间自动消失
+//Tooltip支持用户传入任意一个child作为显示的Widget，
+// 并且在用户长按Widget时，会在上方或者下方出现类似Toast的提示，隔一段时间自动消失，由于使用起来比较简单
+class MyTooltip extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Tooltips"),
+      ),
+      body: Center(
+        child: Tooltip(
+            message: "显示提示内容",
+            //提示的内容
+            height: 60.0,
+            //Tooltip的高度
+            verticalOffset: 50.0,
+            //具体内部child Widget竖直方向的距离,
+            preferBelow: false,
+            //是否显示在下面
+            padding: EdgeInsets.all(20.0),
+            //padding
+            child: Icon(
+              Icons.android,
+              size: 50.0,
+              color: Colors.green,
+            )),
+      ),
+    );
+  }
+}
+//endregion
+//region SnackBar 需要在外城包括上Builder Widget，这个Builder不做任何的其他操作，只不过把Widget树往下移了一层而已。
+//SnackBar无论是用法还是功能使用几乎都跟原生Android一样 ，
+// 唯一有一点需要留意的是在Scaffold.of(context).showSnackBar()中传递的context必须不能是Scaffold下面的Context
+
+//const SnackBar({
+//Key key,
+//@required this.content,//内容
+//this.backgroundColor,//背景
+//this.action,//其他操作
+//this.duration: _kSnackBarDisplayDuration,//显示时长
+//this.animation,//进出动画
+//})
+
+class MySnackBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("SnackBar"),
+      ),
+      body: new Center(
+        child: new Builder(builder: (BuildContext context) {
+          return new RaisedButton(
+            onPressed: () {
+              //值得注意的是这个context必须不能是Scaffold节点下的context,因为Scaffold.of（）
+              // 方法需要从Widget树中去找到Scaffold的Context，所以如果直接在Scaffold中使用showSnackBar，
+              // 需要在外城包括上Builder Widget，这个Builder不做任何的其他操作，只不过把Widget树往下移了一层而已。
+              Scaffold.of(context).showSnackBar(new SnackBar(
+                content: new Text("确定删除吗 "),
+                action: new SnackBarAction(
+                    label: "撤销",
+                    onPressed: () {
+                      print("点击撤回---------------");
+                    }),
+              ));
+            },
+            child: new Text("SnackBar widget"),
+            color: Colors.cyan,
+            highlightColor: Colors.lightBlueAccent,
+            disabledColor: Colors.lightBlueAccent,
+          );
+        }),
+      ),
+    );
+  }
+}
+//endregion
+
+
+//非轻量级的提示组件
+//region SimpleDialog就是一个简单的对话框，开发者只需传入title跟child就可以使用它，
+// 其中child是一个Widget数组，用户可以根据业务需求传入任意的Widget，然后借助showDialog唤起即可。
+class MyAppSimpleDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("SimpleDialog"),
+      ),
+      body: new Center(
+        child:  new RaisedButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  child: new SimpleDialog(
+                    title: new Text("标题"),
+                    contentPadding: const EdgeInsets.all(10.0),
+                    children: <Widget>[    //SimpleDialog内可指定多个children
+                      new Text("文字内容1"),
+                      new ListTile(
+                        leading: new Icon(Icons.android),
+                        title: new Text("android"),
+                      ),
+
+                      new Text("文字内容2"),
+                      new Text("文字内容3"),
+                      new Text("文字内容4"),
+                    ],
+                  ));
+            },
+            child: new Text("Dialog出来"),
+            color: Colors.blue,
+            highlightColor: Colors.lightBlueAccent,
+            disabledColor: Colors.lightBlueAccent),
+
+      ),
+    );
+  }
+}
+//endregion
+//region AlertDialog 在SimpleDialog的基础上新增了action操作而已，
+//AlertDialog其实就是simpleDialog的封装，更加方便开发者使用，只不过在SimpleDialog的基础上新增了action操作而已，
+//用户可以定制具体类似，“取消”、“确定”等一切可能存在dialog上的逻辑处理。
+class MyAppAlertDialog extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("AlertDialog"),
+      ),
+      body: new Center(
+        child: new Builder(builder: (BuildContext context) {
+          return new RaisedButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  child: new AlertDialog(
+                    title: new Text("温馨提示"),
+                    content: new Text("您确定输入正确吗？"),
+                    actions: <Widget>[
+                      new FlatButton(
+                          onPressed: () {
+                            Navigator.of(context);
+                          },
+                          child: new Text("确定")),
+                      new FlatButton(
+                          onPressed: () {
+                            print("点击取消------");
+                          },
+                          child: new Text("取消")),
+                    ],
+                  ));
+            },
+            color: Colors.lightBlueAccent,
+            child: new Icon(Icons.phone),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+//endregion
+//region BottomSheetDialog、ModalBottomSheetDialog
+// 同样也是需要借助showDialog唤起，就跟它名字一样，这两种dialog是从屏幕下方向上弹出的，
+// 不同的是BottomSheetDialog默认会铺满全屏显示，而ModalBottomSheetDialog半屏显示，二者都支持随用户手指拖动上下移动。
+
+//1.showBottomSheet(context,child) 上下文参数，Widget数组
+//2.showModalBottomSheet(context,child) 上下文参数，Widget数组
+class MyAppBottom extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("BottomSheet"),
+      ),
+      body: new Column(
+        children: <Widget>[
+          new Builder(builder: (BuildContext context){
+            return new RaisedButton(
+              onPressed: () {
+                showBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return new Container(
+                        child: new Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: new Column(
+                            children: <Widget>[
+                              new ListTile(
+                                leading: new Icon(Icons.chat),
+                                title: new Text("对话框列表1"),
+                              ),
+                              new ListTile(
+                                leading: new Icon(Icons.help),
+                                title: new Text("对话框列表2"),
+                              ),
+                              new ListTile(
+                                leading: new Icon(Icons.settings),
+                                title: new Text("对话框列表3"),
+                              ),
+                              new ListTile(
+                                leading: new Icon(Icons.more),
+                                title: new Text("对话框列表4"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+              },
+              child: new Text("BottomSheet"),
+            );
+          }),
+
+
+          //showModalBottomSheet与BottomSheet的区别是 BottomSheet充满屏幕，ModalBottomSheet半屏
+          new RaisedButton(
+            onPressed: () {
+              showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return new Container(
+                      child: new Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: new Column(
+                          children: <Widget>[
+                            new ListTile(
+                              leading: new Icon(Icons.chat),
+                              title: new Text("对话框列表1"),
+                            ),
+                            new ListTile(
+                              leading: new Icon(Icons.help),
+                              title: new Text("对话框列表2"),
+                            ),
+                            new ListTile(
+                              leading: new Icon(Icons.settings),
+                              title: new Text("对话框列表3"),
+                            ),
+                            new ListTile(
+                              leading: new Icon(Icons.more),
+                              title: new Text("对话框列表4"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  });
+            },
+            child: new Text("ModalBottomSheet"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+//endregion
+
+//进度条
+//region CircularProgressIndicator圆环进度条
+
+//const CircularProgressIndicator({
+//Key key,
+//double value,  //进度（0-1）之间，不设置进度会一直循环
+//Color backgroundColor,
+//Animation<Color> valueColor, //圆环进度颜色
+//this.strokeWidth = 4.0, //圆环进度条宽度
+//String semanticsLabel,
+//String semanticsValue,
+//})//构造方法
+
+class MyCircularProgress extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+          child: new Column(
+            children: <Widget>[
+              SizedBox(height: 30.0),
+              Text("设置进度比为80%(0.8)"),
+              SizedBox(height: 30.0),
+              CircularProgressIndicator(
+                value: 0.8, //
+                backgroundColor: Colors.green,
+                strokeWidth: 10.0,
+              ),
+              SizedBox(height: 30.0), //设置间隔
+              Text("未做任何处理，默认一直循环"),
+              CircularProgressIndicator(),
+
+              Text("设置圆环进度颜色为红色"),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
+              ),
+            ],
+          )),
+    );
+  }
+}
+//endregion
+//region LinearProgressIndicator水平进度条
+//const LinearProgressIndicator({
+//    Key key,
+//    double value,
+//    Color backgroundColor,
+//    Animation<Color> valueColor,
+//    String semanticsLabel,
+//    String semanticsValue,
+//  })
+class FlutterDemoLinearProgress extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+          child: new Column(
+            children: <Widget>[
+              SizedBox(height: 30.0),
+              Text("设置进度比为80%(0.8)"),
+              SizedBox(height: 30.0),
+              LinearProgressIndicator(
+                value: 0.8, //
+                backgroundColor: Colors.green,
+              ),
+              SizedBox(height: 30.0), //设置间隔
+              Text("未做任何处理，默认一直循环"),
+              LinearProgressIndicator(),
+
+              Text("设置进度颜色为红色,背景透明"),
+              LinearProgressIndicator(
+                backgroundColor: Colors.transparent,
+                valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
+              ),
+            ],
+          )),
+    );
+  }
+}
+//endregion
+
+//region Slider滑杆
+
+//const Slider({
+//Key key,
+//@required this.value,//滑块的值
+//@required this.onChanged, //改变时触发。
+//this.onChangeStart, //改变前触发。
+//this.onChangeEnd,  //改变后触发。
+//this.min = 0.0, //用户可以选择的最小值。
+//this.max = 1.0, //用户可以选择的最大值。
+//this.divisions, //离散部分的数量
+//this.label, //滑块处于活动状态时显示在滑块上方的标签。
+//this.activeColor,//激活时的颜色
+//this.inactiveColor,//滑块轨道的非活动部分的颜色。
+//this.semanticFormatterCallback,
+//})
+
+//静态
+class FlutterDemoSlider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+        child: new Slider(
+          value: 0.4,
+          onChanged: null,
+        ),
+      ),
+    );
+  }
+}
+//动态
+
+//构造方法
+//const Slider({
+//Key key,
+//@required this.value,滑块的值
+//@required this.onChanged, //改变时触发。
+//this.onChangeStart, //改变前触发。
+//this.onChangeEnd,  //改变后触发。
+//this.min = 0.0, //用户可以选择的最小值。
+//this.max = 1.0, //用户可以选择的最大值。
+//this.divisions, //离散部分的数量
+//this.label, //滑块处于活动状态时显示在滑块上方的标签。
+//this.activeColor,//激活时的颜色
+//this.inactiveColor,//滑块轨道的非活动部分的颜色。
+//this.semanticFormatterCallback,
+//})
+
+class FlutterDemo extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => SliderState();
+}
+
+class SliderState extends State {
+  double _currentIndex = 0.0;
+  void _onSliderStateChanged(double value) {
+    setState(() {
+      _currentIndex = value;
+      print(_currentIndex.toString() + '-------------------');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+        child: new Slider(
+          value: _currentIndex,
+          label: '星期${(_currentIndex*10).floor().toString()}',
+          activeColor: Colors.redAccent,
+          inactiveColor: Colors.grey,
+          max: 0.7,
+          min: 0.0,
+          onChanged: _onSliderStateChanged,
+          onChangeStart: (value){
+            print('开始滑动-------------$value');
+          },
+          onChangeEnd: (value){
+            print('结束滑动-------------$value');
+          },
+          divisions: 7,
+        ),
+      ),
+    );
+  }
+}
+//endregion
+//region Checkbox 选中
+//Checkbox跟Slider一样，因为需要处理或者说需要记录用户的选择状态，
+// 然后去更新Checkbox的选中状态，所以理所当然我们也需要使用StatefullWidget来完成这一操作
+class FlutterDemoCheckbox extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => SliderStateCheckBox();
+}
+
+class SliderStateCheckBox extends State {
+  bool isChecked = false;
+
+  void _onCheckStateChanged(bool value) {
+    setState(() {
+      isChecked = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+        child: new Checkbox(
+          value: isChecked,
+          onChanged: _onCheckStateChanged,
+          activeColor: Colors.green,
+        ),
+      ),
+    );
+  }
+}
+//endregion
+//region Switch
+// 跟Checkbox用户上类似，都是为了记录用户的选中状态，
+// 只不过是Switch可定制的部分比Checkbox更多一些，开发者可以加入更多的个性化定制
+
+//const Switch({
+//Key key,
+//@required this.value,//切换按钮的值。
+//@required this.onChanged,//改变时触发。
+//this.activeColor, //激活时圆点的颜色。
+//this.activeTrackColor, //激活时横条的颜色
+//this.inactiveThumbColor,//非激活时原点的颜色。
+//this.inactiveTrackColor, // 非激活时原点的颜色。
+//this.activeThumbImage, //圆点还支持图片，激活时的效果
+//this.inactiveThumbImage,//非激活原点的图片效果。
+//this.materialTapTargetSize,
+//})
+class FlutterDemoSwitch extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => SliderStateSwitch();
+}
+
+class SliderStateSwitch extends State {
+  bool isChecked = false;
+
+  void _onCheckStateChanged(bool value) {
+    setState(() {
+      isChecked = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+        child: Column(
+          children: <Widget>[
+            new Switch(
+              value: isChecked,
+              inactiveThumbColor: Colors.redAccent,
+              inactiveTrackColor: Colors.brown,
+              activeTrackColor: Colors.blue,
+              onChanged: _onCheckStateChanged,
+              activeColor: Colors.green,
+            ),
+            Text("指定激活跟非激活状态下，圆点都为图片"),
+            new Switch(
+              value: isChecked,
+              inactiveThumbImage: AssetImage('image/ic_launcher.png'),
+              activeThumbImage: AssetImage('image/ic_launcher.png'),
+              onChanged: _onCheckStateChanged,
+              activeColor: Colors.green,
+            ),
+            new Switch(
+              value: isChecked,
+              onChanged: _onCheckStateChanged,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+//endregion
+
+//Switch和Checkbox属性比较简单，读者可以查看API文档，它们都有一个activeColor属性，用于设置激活态的颜色。
+// 至于大小，到目前为止，Checkbox的大小是固定的，无法自定义，而Switch只能定义宽度，高度也是固定的。
+// 值得一提的是Checkbox有一个属性tristate ，表示是否为三态，其默认值为false ，
+// 这时Checkbox有两种状态即“选中”和“不选中”，对应的value值为true和false ；
+// 如果其值为true时，value的值会增加一个状态null，读者可以自行了解。
+
+//region Radio 在项目开发或者真实案例中Radio通常都是成组出现，比如性别选择、爱好选择等等场景中
+//构造方法
+//const Radio({
+//Key key,
+//@required this.value,  //单选的值。
+//@required this.groupValue, //选择组的值。
+//@required this.onChanged,  //改变时触发。
+//this.activeColor,  //激活时的颜色
+//this.materialTapTargetSize,
+//})
+class FlutterDemoRadio extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => SliderStateRadio();
+}
+
+class SliderStateRadio extends State {
+  int _value = 0;
+  String _sex = '男';
+
+  void _onRadioChanged(int value) {
+    setState(() {
+      _value = value;
+    });
+  }
+
+  void _onSexRadioChanged(String value) {
+    setState(() {
+      _sex = value;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter进阶之旅"),
+      ),
+      body: new Center(
+        child: Column(children: <Widget>[
+          Radio(
+            value: 0,
+            groupValue: _value,
+            onChanged: _onRadioChanged,
+          ),
+          Radio(
+            value: 1,
+            groupValue: _value,
+            onChanged: _onRadioChanged,
+          ),
+          Radio(
+            value: 2,
+            groupValue: _value,
+            onChanged: _onRadioChanged,
+          ),
+
+          Text("选择的数字为$_value"),
+          SizedBox(height: 50.0),
+          Text("选择性别"),
+          new Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Radio(
+                value: '男',
+                groupValue: _sex,
+                onChanged: _onSexRadioChanged,
+              ),
+              Radio(
+                value: '女',
+                groupValue: _sex,
+                onChanged: _onSexRadioChanged,
+              ),
+            ],
+          ),
+          Text(_sex),
+
+        ]),
+      ),
+    );
+  }
+}
+//endregion
+
+
+
+//StatelessWidget 绘制的UI页的状态包括被渲染的内容自始至终状态都不会改变
+//所绘制的UI可能在未来的某个场景下发生变化我们会选用StatefullWidget来实现
 
 //region 电影海报案例 2020年5月21日17:06:30
 class MyGrid extends StatelessWidget {
@@ -33,9 +820,7 @@ class MyGrid extends StatelessWidget {
     return new MaterialApp(
         title: '电影海报',
         home: Scaffold(
-            appBar: AppBar(
-                title: Text('实例'),
-                centerTitle: true),
+            appBar: AppBar(title: Text('实例'), centerTitle: true),
             body: GridView(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
