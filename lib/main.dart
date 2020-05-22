@@ -29,7 +29,6 @@ import 'dart:io';
 //这是入口，运行这个方法 走出刚才给你的截图 就是电影 那个列表模板
 //void main() => runApp(MyAppEdit());
 void main() {
-
   runApp(new MaterialApp(
     home: new StoragePage_Path(),
   ));
