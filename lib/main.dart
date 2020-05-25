@@ -3,6 +3,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
+import 'router/new_page_with_callback/DynamicNavigationPage.dart';
+import 'router/StaticNavigatorPage.dart';
+
+//region main
 //关于文本  Text
 //void main() {
 //  runApp(MyApp());
@@ -28,11 +32,427 @@ import 'dart:io';
 
 //这是入口，运行这个方法 走出刚才给你的截图 就是电影 那个列表模板
 //void main() => runApp(MyAppEdit());
+
+//void main() {
+//  runApp(new MaterialApp(
+//      home: new StoragePage_Path(),
+
+/*home: new FlutterRouterDemo(),
+      routes: <String, WidgetBuilder>{
+        'router': (_) => new StaticNavigatorPage()
+        //这里一定要保证跳页的路由路径跟上面注册的路径一致
+      }*/
+
+/*home: new FlutterPageWithResult(),
+      routes: <String, WidgetBuilder>{
+        'router/new_page_with_callback': (_) =>
+            new StaticNavigatorPageWithResult()
+      }));*/
+//}
+//endregion
+
 void main() {
-  runApp(new MaterialApp(
-    home: new StoragePage_Path(),
-  ));
+  runApp(new MaterialApp(title: 'ListView', home: new MyApp1()));
 }
+
+//region ListView
+//构造方法
+/*ListView({
+Key key,
+Axis scrollDirection: Axis.vertical,//滚动方向
+bool reverse: false,//是否反向显示数据
+ScrollController controller,
+bool primary,
+ScrollPhysics physics,//物理滚动
+bool shrinkWrap: false,
+EdgeInsetsGeometry padding,
+this.itemExtent,//item有效范围
+bool addAutomaticKeepAlives: true,//自动保存视图缓存
+bool addRepaintBoundaries: true,//添加重绘边界
+List<Widget> children: const <Widget>[],
+})*/
+class MyAppListView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text("ListView de 具体使用"),
+        ),
+        body: ListView(
+          scrollDirection: Axis.vertical, //控制方向
+          children: <Widget>[
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.lightBlue,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.red,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.deepPurple,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.yellow,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.lightBlue,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.red,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.deepPurple,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.lightBlue,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.red,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.deepPurple,
+            ),
+            new Container(
+              width: 100.0,
+              height: 100.0,
+              color: Colors.lightBlue,
+            ),
+          ],
+        ));
+  }
+}
+
+//endregion
+//region 可复用的ListView长列表
+
+//itemCount：：被展示的Item的数量
+//itemBuilder:被展示的Item的构造者（这里读者可以它类比成原生Android的Adapter）
+class MyAppListView1 extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => MyState();
+}
+
+class MyState extends State {
+  List<ItemEntity> entityList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 1; i < 51; i++) {
+      entityList.add(ItemEntity("Item  $i", Icons.accessibility));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text("ListView"),
+        ),
+        body: ListView.builder(
+          itemBuilder: (BuildContext context, int index) {
+            return ItemView(entityList[index]);
+          },
+          itemCount: entityList.length,
+        ));
+  }
+}
+
+/**
+ * 渲染Item的实体类
+ */
+class ItemEntity {
+  String title;
+  IconData iconData;
+
+  ItemEntity(this.title, this.iconData);
+}
+
+/**
+ * ListView builder生成的Item布局，读者可类比成原生Android的Adapter的角色
+ */
+class ItemView extends StatelessWidget {
+  ItemEntity itemEntity;
+
+  ItemView(this.itemEntity);
+
+  @override
+  Widget build(BuildContext context) {
+    return Flex(
+      direction: Axis.vertical,
+      children: <Widget>[
+        ListTile(
+            leading: Icon(itemEntity.iconData),
+            title: Text(itemEntity.title),
+            subtitle: Text('长列表')),
+        SizedBox(
+          height: 0.1,
+          child: Container(
+            color: Colors.black,
+          ),
+        )
+      ],
+    );
+  }
+}
+
+//endregion
+
+//region GridView
+/*GridView({
+    Key key,
+    Axis scrollDirection: Axis.vertical,
+    bool reverse: false,
+    ScrollController controller,
+    bool primary,
+    ScrollPhysics physics,
+    bool shrinkWrap: false,
+    EdgeInsetsGeometry padding,
+    @required this.gridDelegate,   //控制GridView显示方式
+    bool addAutomaticKeepAlives: true,
+    bool addRepaintBoundaries: true,
+    List<Widget> children: const <Widget>[],
+  })*/
+
+//GridView的构造方法对比ListView多了一个gridDelegate参数，来配置一行（列）有几个Item和Item的间隔。
+
+//gridDelegate可接收两种参数类型：
+//
+//SliverGridDelegateWithFixedCrossAxisCount可以直接指定每行（列）显示多少个Item
+//SliverGridDelegateWithMaxCrossAxisExtent会根据GridView的宽度和你设置的每个的宽度来自动计算没行显示多少个Item
+class MyAppGridView extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => MyStateGridView();
+}
+
+class MyStateGridView extends State {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text("ListView"),
+        ),
+        body: new GridView(
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 100,
+              //根据maxCrossAxisExtent的值对比屏幕的真实宽度，决定一行或者一列显示多少个Item
+              mainAxisSpacing: 1,
+              crossAxisSpacing: 1),
+          children: <Widget>[
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+            Container(
+                child: Icon(Icons.adb, size: 60),
+                color: Colors.deepOrangeAccent),
+          ],
+        ));
+  }
+}
+//endregion
+//region  custom()
+class MyApp1 extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => MyState1();
+}
+
+class MyState1 extends State {
+  List<ItemEntity1> entityList1 = [];
+
+  @override
+  void initState() {
+    super.initState();
+    for (int i = 0; i < 30; i++) {
+      entityList1.add(ItemEntity1("Item  $i", Icons.accessibility));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text("GridView"),
+        ),
+        body: GridView.custom(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            childrenDelegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                return ItemView1(entityList1[index]);
+              },
+              childCount: entityList1.length,
+            )));
+  }
+}
+
+/**
+ * 渲染Item的实体类
+ */
+class ItemEntity1 {
+  String title;
+  IconData iconData;
+
+  ItemEntity1(this.title, this.iconData);
+}
+
+/**
+ * GridView builder生成的Item布局，读者可类比成原生Android的Adapter的角色
+ */
+class ItemView1 extends StatelessWidget {
+  ItemEntity1 itemEntity;
+
+  ItemView1(this.itemEntity);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: Flex(
+        direction: Axis.vertical,
+        children: <Widget>[
+          Icon(
+            itemEntity.iconData,
+            size: 60,
+          ),
+          Text(itemEntity.title),
+        ],
+      ),
+      onTap: () {
+        Scaffold.of(context).showSnackBar(
+            new SnackBar(content: Text("点击了${itemEntity.title}")));
+      },
+    );
+  }
+}
+//endregion
+
+//Flutter路由分为静态路由跟动态路由，静态路由不支持向下一个页面传递参数，动态路由可传递
+//静态路由使用时需要提前注册声明页面路径，
+//动态路由可以直接在使用时构造路由对象，不需要提前注册路径。
+//两种类型都支持接收下一页面回传回来的值
+//region 静态路由跳页
+//1.注册路由且保证路由的唯一性
+//2.跳页时使用Navigator.of(context).pushNamed('路由地址');
+//3.使用Navigator.of(context).pop();结束当前页
+class FlutterRouterDemo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter 进阶之旅"),
+      ),
+      body: new Center(
+          child: new RaisedButton(
+              child: new Text("静态路由跳转"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamed('router'); //这里一定要保证跳页的路由路径跟上面注册的路径一致
+                //跳页时使用Navigator.of(context).pushNamed('路由地址');
+                //注册路由且保证路由的唯一性
+              })),
+    );
+  }
+}
+
+//endregion
+//region 静态路由跳页接收下一页的返回值
+class FlutterPageWithResult extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Flutter 进阶之旅"),
+      ),
+      body: new Center(
+          child: new RaisedButton(
+              child: new Text("静态路由接收下一页面 返回值"),
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamed('router/new_page_with_callback')
+                    .then((value) {
+                  showDialog(
+                      context: context,
+                      child: new AlertDialog(
+                        content: new Text(value),
+                      ));
+                });
+              })),
+    );
+  }
+}
+//endregion
+
+//region 动态路由跳页
+
+class FlutterDemo1 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+        appBar: new AppBar(
+          title: new Text("Flutter进阶之旅"),
+        ),
+        body: new Center(
+            child: new RaisedButton(
+          onPressed: () {
+            Navigator.push(
+                context,
+                new MaterialPageRoute(
+                    //_代表参数为空
+                    builder: (_) => new DynamicNaviattionPage(
+                          username: "xiedong",
+                          password: "123456",
+                        ))).then((value) {
+              showDialog(
+                  context: context,
+                  child: new AlertDialog(
+                    content: new Text(value),
+                  ));
+            });
+          },
+          child: new Text("动态路由传参"),
+        )));
+  }
+}
+//endregion
 
 //region SharedPreferences 数据存储
 class StoragePage extends StatefulWidget {
@@ -121,10 +541,10 @@ class StorageState_Path extends State {
    */
   Future getString() async {
     final file = await getFile('file.text');
-    var filePath  = file.path;
+    var filePath = file.path;
     setState(() {
       file.readAsString().then((String value) {
-        _storageString = value +'\n文件存储路径：'+filePath;
+        _storageString = value + '\n文件存储路径：' + filePath;
       });
     });
   }
@@ -140,7 +560,7 @@ class StorageState_Path extends State {
     final filePath = fileDirectory.path;
 
     //或者file对象（操作文件记得导入import 'dart:io'）
-    return new File(filePath + "/"+fileName);
+    return new File(filePath + "/" + fileName);
   }
 
   @override
@@ -173,9 +593,6 @@ class StorageState_Path extends State {
   }
 }
 //endregion path_provider
-
-
-
 
 //轻量级的 提示widget
 // region Tooltip 长按widget时，会在上方或者下方出现类似Toast的提示，隔一段时间自动消失
@@ -258,7 +675,6 @@ class MySnackBar extends StatelessWidget {
 }
 //endregion
 
-
 //非轻量级的提示组件
 //region SimpleDialog就是一个简单的对话框，开发者只需传入title跟child就可以使用它，
 // 其中child是一个Widget数组，用户可以根据业务需求传入任意的Widget，然后借助showDialog唤起即可。
@@ -270,14 +686,15 @@ class MyAppSimpleDialog extends StatelessWidget {
         title: new Text("SimpleDialog"),
       ),
       body: new Center(
-        child:  new RaisedButton(
+        child: new RaisedButton(
             onPressed: () {
               showDialog(
                   context: context,
                   child: new SimpleDialog(
                     title: new Text("标题"),
                     contentPadding: const EdgeInsets.all(10.0),
-                    children: <Widget>[    //SimpleDialog内可指定多个children
+                    children: <Widget>[
+                      //SimpleDialog内可指定多个children
                       new Text("文字内容1"),
                       new ListTile(
                         leading: new Icon(Icons.android),
@@ -294,11 +711,11 @@ class MyAppSimpleDialog extends StatelessWidget {
             color: Colors.blue,
             highlightColor: Colors.lightBlueAccent,
             disabledColor: Colors.lightBlueAccent),
-
       ),
     );
   }
 }
+
 //endregion
 //region AlertDialog 在SimpleDialog的基础上新增了action操作而已，
 //AlertDialog其实就是simpleDialog的封装，更加方便开发者使用，只不过在SimpleDialog的基础上新增了action操作而已，
@@ -358,7 +775,7 @@ class MyAppBottom extends StatelessWidget {
       ),
       body: new Column(
         children: <Widget>[
-          new Builder(builder: (BuildContext context){
+          new Builder(builder: (BuildContext context) {
             return new RaisedButton(
               onPressed: () {
                 showBottomSheet(
@@ -394,7 +811,6 @@ class MyAppBottom extends StatelessWidget {
               child: new Text("BottomSheet"),
             );
           }),
-
 
           //showModalBottomSheet与BottomSheet的区别是 BottomSheet充满屏幕，ModalBottomSheet半屏
           new RaisedButton(
@@ -460,28 +876,29 @@ class MyCircularProgress extends StatelessWidget {
       ),
       body: new Center(
           child: new Column(
-            children: <Widget>[
-              SizedBox(height: 30.0),
-              Text("设置进度比为80%(0.8)"),
-              SizedBox(height: 30.0),
-              CircularProgressIndicator(
-                value: 0.8, //
-                backgroundColor: Colors.green,
-                strokeWidth: 10.0,
-              ),
-              SizedBox(height: 30.0), //设置间隔
-              Text("未做任何处理，默认一直循环"),
-              CircularProgressIndicator(),
+        children: <Widget>[
+          SizedBox(height: 30.0),
+          Text("设置进度比为80%(0.8)"),
+          SizedBox(height: 30.0),
+          CircularProgressIndicator(
+            value: 0.8, //
+            backgroundColor: Colors.green,
+            strokeWidth: 10.0,
+          ),
+          SizedBox(height: 30.0), //设置间隔
+          Text("未做任何处理，默认一直循环"),
+          CircularProgressIndicator(),
 
-              Text("设置圆环进度颜色为红色"),
-              CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
-              ),
-            ],
-          )),
+          Text("设置圆环进度颜色为红色"),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
+          ),
+        ],
+      )),
     );
   }
 }
+
 //endregion
 //region LinearProgressIndicator水平进度条
 //const LinearProgressIndicator({
@@ -501,25 +918,25 @@ class FlutterDemoLinearProgress extends StatelessWidget {
       ),
       body: new Center(
           child: new Column(
-            children: <Widget>[
-              SizedBox(height: 30.0),
-              Text("设置进度比为80%(0.8)"),
-              SizedBox(height: 30.0),
-              LinearProgressIndicator(
-                value: 0.8, //
-                backgroundColor: Colors.green,
-              ),
-              SizedBox(height: 30.0), //设置间隔
-              Text("未做任何处理，默认一直循环"),
-              LinearProgressIndicator(),
+        children: <Widget>[
+          SizedBox(height: 30.0),
+          Text("设置进度比为80%(0.8)"),
+          SizedBox(height: 30.0),
+          LinearProgressIndicator(
+            value: 0.8, //
+            backgroundColor: Colors.green,
+          ),
+          SizedBox(height: 30.0), //设置间隔
+          Text("未做任何处理，默认一直循环"),
+          LinearProgressIndicator(),
 
-              Text("设置进度颜色为红色,背景透明"),
-              LinearProgressIndicator(
-                backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
-              ),
-            ],
-          )),
+          Text("设置进度颜色为红色,背景透明"),
+          LinearProgressIndicator(
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation(Colors.deepOrange),
+          ),
+        ],
+      )),
     );
   }
 }
@@ -584,6 +1001,7 @@ class FlutterDemo extends StatefulWidget {
 
 class SliderState extends State {
   double _currentIndex = 0.0;
+
   void _onSliderStateChanged(double value) {
     setState(() {
       _currentIndex = value;
@@ -600,16 +1018,16 @@ class SliderState extends State {
       body: new Center(
         child: new Slider(
           value: _currentIndex,
-          label: '星期${(_currentIndex*10).floor().toString()}',
+          label: '星期${(_currentIndex * 10).floor().toString()}',
           activeColor: Colors.redAccent,
           inactiveColor: Colors.grey,
           max: 0.7,
           min: 0.0,
           onChanged: _onSliderStateChanged,
-          onChangeStart: (value){
+          onChangeStart: (value) {
             print('开始滑动-------------$value');
           },
-          onChangeEnd: (value){
+          onChangeEnd: (value) {
             print('结束滑动-------------$value');
           },
           divisions: 7,
@@ -618,6 +1036,7 @@ class SliderState extends State {
     );
   }
 }
+
 //endregion
 //region Checkbox 选中
 //Checkbox跟Slider一样，因为需要处理或者说需要记录用户的选择状态，
@@ -780,7 +1199,6 @@ class SliderStateRadio extends State {
             groupValue: _value,
             onChanged: _onRadioChanged,
           ),
-
           Text("选择的数字为$_value"),
           SizedBox(height: 50.0),
           Text("选择性别"),
@@ -800,15 +1218,12 @@ class SliderStateRadio extends State {
             ],
           ),
           Text(_sex),
-
         ]),
       ),
     );
   }
 }
 //endregion
-
-
 
 //StatelessWidget 绘制的UI页的状态包括被渲染的内容自始至终状态都不会改变
 //所绘制的UI可能在未来的某个场景下发生变化我们会选用StatefullWidget来实现
